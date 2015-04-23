@@ -9,18 +9,18 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 #define input
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
-#listFile = 'list30V2.txt'
-#listFile = 'list50V2.txt'
-#listFile = 'list80V2.txt'
-#listFile = 'list120V2.txt'
-#listFile = 'list170V2.txt'
-#listFile = 'list300V2.txt'
-#listFile = 'list470V2.txt'
-#listFile = 'list600V2.txt'
-#listFile = 'list800V2.txt'
-#listFile = 'list1000V2.txt'
-#listFile = 'list1400V2.txt'
-listFile = 'list1800V2.txt'
+#listFile = 'list30.txt'
+listFile = 'list50.txt'
+#listFile = 'list80.txt'
+#listFile = 'list120.txt'
+#listFile = 'list170.txt'
+#listFile = 'list300.txt'
+#listFile = 'list470.txt'
+#listFile = 'list600.txt'
+#listFile = 'list800.txt'
+#listFile = 'list1000.txt'
+#listFile = 'list1400.txt'
+#listFile = 'list1800.txt'
 inputFiles = []
 with open(listFile) as inFileList:
     for line in inFileList:
@@ -32,8 +32,8 @@ process.source = cms.Source("PoolSource",
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string("test.root"),
-    #fileName = cms.string(listFile.replace('txt', 'root')),
+    #fileName = cms.string("test.root"),
+    fileName = cms.string(listFile.replace('txt', 'root')),
     closeFileFast = cms.untracked.bool(True)
 )
 

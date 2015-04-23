@@ -58,7 +58,7 @@ void TriggerRatesAnalyzer::analyze(edm::Event const& e, edm::EventSetup const& e
     numTriggers = trigNames.size();
     //loop over triggers
     for( unsigned int hltIndex=0; hltIndex<numTriggers; ++hltIndex ){
-        if (hltresults->wasrun(hltIndex)) std::cout << trigNames.triggerName(hltIndex) << endl;
+        //if (hltresults->wasrun(hltIndex)) std::cout << trigNames.triggerName(hltIndex) << endl;
         if (hltresults->wasrun(hltIndex) && hltresults->accept(hltIndex)) triggerPassed[hltIndex] = true;
     }
 
