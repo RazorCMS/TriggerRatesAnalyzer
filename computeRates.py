@@ -5,12 +5,12 @@ import ROOT as rt
 import math
 
 #names of the input files, without '.root'
-names = ["list30V2", "list50V2", "list80V2", "list120V2", "list170V2", "list300V2", "list470V2", "list600V2", "list800V2", "list1000V2", "list1400V2", "list1800V2"]
+names = ["list30", "list50", "list80", "list120", "list170", "list300", "list470", "list600", "list800", "list1000", "list1400", "list1800"]
 #cross sections in pb of the processes represented by the input files
 xSections = [161500000, 22110000, 3000114.3, 493200, 120300, 7475, 587.1, 167, 28.25, 8.195, 0.7346, 0.1091]
 
 #initialize all trigger rates to 0
-numTriggers = 32
+numTriggers = 37
 triggerRates = []
 errors = []
 for i in range(numTriggers): 
@@ -31,7 +31,9 @@ for i, name in enumerate(names):
         totalEvents = qcdTree.GetEntries()
         #rate = luminosity*cross section*fraction of events passing
         #here 0.005 is obtained as 5e33 (inst. luminosity) divided by 10^36 (conversion from picobarns to cm^2)
-        rate = 0.005*xSections[i]*numPassed*1.0/totalEvents
+        #for 1.4e34 luminosity, use 0.014
+        instLumi = 0.014 #in /picobarns/s
+        rate = instLumi*xSections[i]*numPassed*1.0/totalEvents
         error = 0.0
         if numPassed > 0: error = rate / math.sqrt(numPassed)
         print("Trigger "+str(triggerNum)+": "+str(numPassed)+" passed out of "+str(totalEvents)+", for a rate contribution of "+str(rate)+" +/- "+str(error))
