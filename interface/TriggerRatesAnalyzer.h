@@ -45,7 +45,7 @@ class TriggerRatesAnalyzer: public EDAnalyzer{
 
   //variables
   unsigned int numTriggers;
-  bool triggerPassed[50];
+  bool triggerPassed[200];
 };
 
 #endif
