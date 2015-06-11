@@ -8,6 +8,7 @@ import math
 names = ["list30", "list50", "list80", "list120", "list170", "list300", "list470", "list600", "list800", "list1000", "list1400", "list1800"]
 #cross sections in pb of the processes represented by the input files
 xSections = [161500000, 22110000, 3000114.3, 493200, 120300, 7475, 587.1, 167, 28.25, 8.195, 0.7346, 0.1091]
+instLumi = 0.014 #in /picobarns/s
 
 #initialize all trigger rates to 0
 numTriggers = 37
@@ -32,7 +33,6 @@ for i, name in enumerate(names):
         #rate = luminosity*cross section*fraction of events passing
         #here 0.005 is obtained as 5e33 (inst. luminosity) divided by 10^36 (conversion from picobarns to cm^2)
         #for 1.4e34 luminosity, use 0.014
-        instLumi = 0.014 #in /picobarns/s
         rate = instLumi*xSections[i]*numPassed*1.0/totalEvents
         error = 0.0
         if numPassed > 0: error = rate / math.sqrt(numPassed)
