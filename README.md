@@ -3,6 +3,8 @@ Lightweight analyzer for measuring the rates of HLT paths
 
 `git clone git@github.com:RazorCMS/TriggerRatesAnalyzer.git HLTriggerOffline/TriggerRatesAnalyzer`
 
+`scram b`
+
 To run: `cmsRun test/TriggerRatesAnalyzer.py`
 
 The variable `listFile` in `test/TriggerRatesAnalyzer.py` specifies the analyzer's input.  The indicated file should contain a list of input EDM files, one per line.  Each EDM file needs to contain a TriggerResults object.
