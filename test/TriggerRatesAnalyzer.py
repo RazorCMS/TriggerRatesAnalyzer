@@ -10,7 +10,7 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 #listFile = 'list30.txt'
-listFile = 'list50.txt'
+#listFile = 'list50.txt'
 #listFile = 'list80.txt'
 #listFile = 'list120.txt'
 #listFile = 'list170.txt'
@@ -21,10 +21,11 @@ listFile = 'list50.txt'
 #listFile = 'list1000.txt'
 #listFile = 'list1400.txt'
 #listFile = 'list1800.txt'
+listFile = 'listT2tt.txt'
 inputFiles = []
 with open(listFile) as inFileList:
-    for line in inFileList:
-        inputFiles.append(line)
+    for i, line in enumerate(inFileList):
+        if i<1: inputFiles.append(line)
 
 process.source = cms.Source("PoolSource", 
         fileNames = cms.untracked.vstring(inputFiles)
@@ -39,7 +40,7 @@ process.TFileService = cms.Service("TFileService",
 
 #declare analyzer module
 process.triggerRatesAnalysis = cms.EDAnalyzer("TriggerRatesAnalyzer",
-  TriggerResults = cms.InputTag('TriggerResults','','reHLT'),
+  TriggerResults = cms.InputTag('TriggerResults','','TEST'),
 )
 
 #define messagelogger (controls verbosity of the module)

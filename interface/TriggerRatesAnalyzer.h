@@ -46,6 +46,7 @@ class TriggerRatesAnalyzer: public EDAnalyzer{
   //variables
   unsigned int numTriggers;
   bool triggerPassed[200];
+  std::vector<std::string>  *myTriggerNames;
 };
 
 #endif

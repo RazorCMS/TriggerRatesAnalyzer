@@ -18,8 +18,10 @@ TriggerRatesAnalyzer::TriggerRatesAnalyzer(const edm::ParameterSet& ps)
     //set up output tree
     outTree = fs->make<TTree>("TriggerInfo", "Rate info");
 
+    myTriggerNames = new std::vector<std::string>; myTriggerNames->clear();
     outTree->Branch("numTriggers", &numTriggers, "numTriggers/I"); 
     outTree->Branch("triggerPassed", triggerPassed, "triggerPassed[numTriggers]/O");
+    outTree->Branch("triggerNames", "std::vector<std::string>",&myTriggerNames);
 }
 
 TriggerRatesAnalyzer::~TriggerRatesAnalyzer()
@@ -59,6 +61,7 @@ void TriggerRatesAnalyzer::analyze(edm::Event const& e, edm::EventSetup const& e
     //loop over triggers
     for( unsigned int hltIndex=0; hltIndex<numTriggers; ++hltIndex ){
         //if (hltresults->wasrun(hltIndex)) std::cout << trigNames.triggerName(hltIndex) << endl;
+	myTriggerNames->push_back(trigNames.triggerName(hltIndex));
         if (hltresults->wasrun(hltIndex) && hltresults->accept(hltIndex)) triggerPassed[hltIndex] = true;
     }
 

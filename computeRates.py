@@ -11,12 +11,16 @@ xSections = [161500000, 22110000, 3000114.3, 493200, 120300, 7475, 587.1, 167, 2
 instLumi = 0.014 #in /picobarns/s
 
 #initialize all trigger rates to 0
-numTriggers = 37
+numTriggers = 20
 triggerRates = []
 errors = []
+triggerNameList = []
+triggerNamePadList = []
 for i in range(numTriggers): 
     triggerRates.append(0.0)
     errors.append(0.0)
+    triggerNameList.append('')
+    triggerNamePadList.append('')
 
 #loop over the files and measure the trigger rates
 for i, name in enumerate(names):
@@ -27,16 +31,33 @@ for i, name in enumerate(names):
     if not qcdTree:
         print("Error: didn't find the trigger info tree!")
         exit()
+        
+    # get the trigger names form the vector of strings
+    qcdTree.GetEntry(0)
+    for j, name in enumerate(qcdTree.triggerNames):
+        triggerNameList[j] = name
+    triggerNameLengths = [len(triggerName) for triggerName in triggerNameList]
+    maxLength = max(triggerNameLengths)
+    
+    for j, triggerName in enumerate(triggerNameList):
+        while len(triggerName)<maxLength:
+            triggerName+=' '
+        triggerNamePadList[j] = triggerName
+    
+
     for triggerNum in range(numTriggers):
-        numPassed = qcdTree.Draw("", "triggerPassed["+str(triggerNum)+"]")
+        numPassed = qcdTree.Draw("", "triggerPassed[%i]"%triggerNum)
         totalEvents = qcdTree.GetEntries()
         #rate = luminosity*cross section*fraction of events passing
         #here 0.005 is obtained as 5e33 (inst. luminosity) divided by 10^36 (conversion from picobarns to cm^2)
         #for 1.4e34 luminosity, use 0.014
         rate = instLumi*xSections[i]*numPassed*1.0/totalEvents
-        error = 0.0
-        if numPassed > 0: error = rate / math.sqrt(numPassed)
-        print("Trigger "+str(triggerNum)+": "+str(numPassed)+" passed out of "+str(totalEvents)+", for a rate contribution of "+str(rate)+" +/- "+str(error))
+        rateError = 0.0
+        if numPassed > 0: rateError = rate / math.sqrt(numPassed)
+        print("%s: %i passed out of %i, for a rate contribution of %f +/- %f" %(triggerNamePadList[triggerNum],numPassed,totalEvents,rate,rateError))
         triggerRates[triggerNum] += rate
-        errors[triggerNum] = math.sqrt(errors[triggerNum]*errors[triggerNum] + error*error)
-for i, rate in enumerate(triggerRates): print(str(i)+": "+str(rate)+" +/- "+str(errors[i]))
+        errors[triggerNum] = math.sqrt(errors[triggerNum]*errors[triggerNum] + rateError*rateError)
+        
+print("Total Rates")
+for triggerNum, (rate, error) in enumerate(zip(triggerRates,errors)):
+    print("%s: %f +/- %f"%(triggerNamePadList[triggerNum],rate,error))
