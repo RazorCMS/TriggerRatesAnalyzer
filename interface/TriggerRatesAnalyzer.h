@@ -17,6 +17,11 @@
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 #include "DataFormats/HLTReco/interface/TriggerEventWithRefs.h"
 
+//string
+#include <string>
+#include <iostream>
+#include <vector>
+
 using namespace edm;
 
 class TriggerRatesAnalyzer: public EDAnalyzer{
@@ -45,8 +50,10 @@ class TriggerRatesAnalyzer: public EDAnalyzer{
 
   //variables
   unsigned int numTriggers;
-  bool triggerPassed[200];
+  bool triggerPassed[50];
+  bool firstEvent;
   std::vector<std::string>  *myTriggerNames;
+  
 };
 
 #endif

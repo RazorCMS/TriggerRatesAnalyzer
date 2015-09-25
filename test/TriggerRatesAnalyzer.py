@@ -21,11 +21,12 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 #listFile = 'list1000.txt'
 #listFile = 'list1400.txt'
 #listFile = 'list1800.txt'
-listFile = 'listT2tt.txt'
+#listFile = 'listT2tt.txt'
+listFile = 'hltphysicspart0.txt'
 inputFiles = []
 with open(listFile) as inFileList:
     for i, line in enumerate(inFileList):
-        if i<1: inputFiles.append(line)
+        inputFiles.append(line)
 
 process.source = cms.Source("PoolSource", 
         fileNames = cms.untracked.vstring(inputFiles)
@@ -45,9 +46,10 @@ process.triggerRatesAnalysis = cms.EDAnalyzer("TriggerRatesAnalyzer",
 
 #define messagelogger (controls verbosity of the module)
 process.MessageLogger = cms.Service("MessageLogger",
-       destinations   = cms.untracked.vstring('detailedInfo','critical','cerr'),
+       #destinations   = cms.untracked.vstring('detailedInfo','critical','cerr'),
+       destinations   = cms.untracked.vstring('critical','cerr'),
        critical       = cms.untracked.PSet(threshold = cms.untracked.string('ERROR')),
-       detailedInfo   = cms.untracked.PSet(threshold  = cms.untracked.string('INFO') ),
+       #detailedInfo   = cms.untracked.PSet(threshold  = cms.untracked.string('INFO') ),
        cerr           = cms.untracked.PSet(threshold  = cms.untracked.string('WARNING') )
 )
 
