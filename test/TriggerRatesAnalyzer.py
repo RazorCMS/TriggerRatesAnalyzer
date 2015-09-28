@@ -6,23 +6,21 @@ process = cms.Process('TESTING')
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 
-#define input
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
-#listFile = 'list30.txt'
-#listFile = 'list50.txt'
-#listFile = 'list80.txt'
-#listFile = 'list120.txt'
-#listFile = 'list170.txt'
-#listFile = 'list300.txt'
-#listFile = 'list470.txt'
-#listFile = 'list600.txt'
-#listFile = 'list800.txt'
-#listFile = 'list1000.txt'
-#listFile = 'list1400.txt'
-#listFile = 'list1800.txt'
-#listFile = 'listT2tt.txt'
-listFile = 'hltphysicspart0.txt'
+if len(sys.argv) < 4:
+    print "usage:"
+    print "cmsRun TriggerRatesAnalyzer.py listTextFileName maxEvents"
+    
+#define input
+maxEvents = int(sys.argv[3])
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(maxEvents) )
+
+#listFile = 'listQCD_Pt_120to170.txt'
+#listFile = 'hltphysicspart0.txt'
+listFile = sys.argv[2]
+
+print "using list file: %s with maxEvents = %i" % (listFile, maxEvents)
+
 inputFiles = []
 with open(listFile) as inFileList:
     for i, line in enumerate(inFileList):
