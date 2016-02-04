@@ -10,6 +10,7 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 // Trigger
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -23,6 +24,7 @@
 #include <vector>
 
 using namespace edm;
+const int NUM_TRIGGERS_MAX = 500;
 
 class TriggerRatesAnalyzer: public EDAnalyzer{
 
@@ -40,6 +42,8 @@ class TriggerRatesAnalyzer: public EDAnalyzer{
 
   //variables from config file
   edm::EDGetTokenT<edm::TriggerResults> triggerResults_;
+  edm::EDGetTokenT<std::vector<PileupSummaryInfo> > puInfo_;
+  int puMin, puMax; //min & max pileup considered
 
   std::string triggerPath_;
   edm::InputTag triggerFilter_;
@@ -50,7 +54,7 @@ class TriggerRatesAnalyzer: public EDAnalyzer{
 
   //variables
   unsigned int numTriggers;
-  bool triggerPassed[50];
+  bool triggerPassed[NUM_TRIGGERS_MAX];
   bool firstEvent;
   std::vector<std::string>  *myTriggerNames;
   
