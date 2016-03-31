@@ -14,7 +14,7 @@ def calcRateData(options):
     for row in csvin:
         triggerDict[row[-1]] = int(row[0])
         
-    names = ['hltphysicspart0','hltphysicspart5']
+    names = ['hltphysics']
     nLumiSec = options.nLumiSec
     prescaleNormalization = options.prescale
     instLumiRec = options.recLumi #in /picobarns/s
@@ -27,7 +27,7 @@ def calcRateData(options):
     print "prescale norm = ", prescaleNormalization
     
     #initialize all trigger rates to 0
-    numTriggers = 21
+    numTriggers = len(triggerDict)+1
     triggerRates = []
     errors = []
     triggerNameList = []
@@ -53,6 +53,7 @@ def calcRateData(options):
         # get the trigger names form the vector of strings
         for name, j in triggerDict.iteritems():
             triggerNameList[int(j)] = name
+        triggerNameList[-1] = 'total'
         triggerNameLengths = [len(triggerName) for triggerName in triggerNameList]
         maxLength = max(triggerNameLengths)
     
@@ -63,7 +64,11 @@ def calcRateData(options):
 
             
         for triggerNum in range(numTriggers):
-            numPassedFile = qcdTree.Draw("", "triggerPassed[%i]"%triggerNum)
+            if triggerNameList[triggerNum]=='total':
+                triggerOrBool = "||".join(["triggerPassed[%i]"%mytrigger for mytrigger in range(numTriggers-1) if 'ZeroBias' not in triggerNameList[mytrigger]])
+                numPassedFile = qcdTree.Draw("", triggerOrBool)
+            else:
+                numPassedFile = qcdTree.Draw("", "triggerPassed[%i]"%triggerNum)
             totalEvents = qcdTree.GetEntries()
             #rate_data = (counts * lumiScaleFactor * prescaleNormalization)/(nlumiSec * lumiSectionLength)        
             print("%s: %i passed out of %i" %(triggerNamePadList[triggerNum],numPassedFile,totalEvents))            
@@ -74,7 +79,10 @@ def calcRateData(options):
     for triggerNum in range(numTriggers):
         triggerRates[triggerNum] = lumiScaleFactor*prescaleNormalization*numPassed[triggerNum]*1.0/(nLumiSec * lumiSectionLength)
         rateError = 0.0
-        if numPassed > 0: rateError = triggerRates[triggerNum] / math.sqrt(numPassed[triggerNum])
+        if numPassed[triggerNum] > 0: 
+            rateError = triggerRates[triggerNum] / math.sqrt(numPassed[triggerNum])
+        else:
+            rateErrror = triggerRates[triggerNum]
         errors[triggerNum] = math.sqrt(errors[triggerNum]*errors[triggerNum] + rateError*rateError)
     for triggerNum, (rate, error) in enumerate(zip(triggerRates,errors)):
         print("%s: %f +/- %f"%(triggerNamePadList[triggerNum],rate,error))
@@ -94,7 +102,7 @@ def calcRateMC(options):
     instLumi = options.instLumi #in /picobarns/s
     
     #initialize all trigger rates to 0
-    numTriggers = 21
+    numTriggers = len(triggerDict)+1
     triggerRates = []
     errors = []
     triggerNameList = []
@@ -135,7 +143,10 @@ def calcRateMC(options):
             #for 1.4e34 luminosity, use 0.014
             rate = instLumi*xSections[i]*numPassed*1.0/totalEvents
             rateError = 0.0
-            if numPassed > 0: rateError = rate / math.sqrt(numPassed)
+            if numPassed > 0: 
+                rateError = rate / math.sqrt(numPassed)
+            else:
+                rateError = rate
             print("%s: %i passed out of %i, for a rate contribution of %f +/- %f" %(triggerNamePadList[triggerNum],numPassed,totalEvents,rate,rateError))
             triggerRates[triggerNum] += rate
             errors[triggerNum] = math.sqrt(errors[triggerNum]*errors[triggerNum] + rateError*rateError)
