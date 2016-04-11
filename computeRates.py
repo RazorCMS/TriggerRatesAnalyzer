@@ -6,6 +6,7 @@ import math
 from optparse import OptionParser    
 import csv
 
+
 def calcRateData(options):
     
     f = open(options.pathNames)
@@ -13,8 +14,10 @@ def calcRateData(options):
     triggerDict = {}
     for row in csvin:
         triggerDict[row[-1]] = int(row[0])
-        
-    names = ['hltphysics']
+
+    triggerDict['total'] = -1
+    
+    names = ['hltphysics3_grun']
     nLumiSec = options.nLumiSec
     prescaleNormalization = options.prescale
     instLumiRec = options.recLumi #in /picobarns/s
@@ -27,65 +30,84 @@ def calcRateData(options):
     print "prescale norm = ", prescaleNormalization
     
     #initialize all trigger rates to 0
-    numTriggers = len(triggerDict)+1
-    triggerRates = []
-    errors = []
+    numTriggers = len(triggerDict)
+    triggerRatesDict = {}
+    errorsDict = {}
     triggerNameList = []
-    triggerNamePadList = []
-    numPassed = []
-    for i in range(numTriggers): 
-        triggerRates.append(0.0)
-        numPassed.append(0)
-        errors.append(0.0)
-        triggerNameList.append('')
-        triggerNamePadList.append('')
-        
+    triggerNumList = []
+    triggerNamePadDict = {}
+    numPassedDict = {}
+    for key, val in triggerDict.iteritems():
+        triggerRatesDict[key] = 0.0
+        numPassedDict[key] = 0
+        errorsDict[key] = 0.0
+        triggerNamePadDict[key] = ''
+    # get the trigger names form the vector of strings
+    for name, j in triggerDict.iteritems():
+        triggerNameList.append(name)
+        exclude = False
+        #for exclName in ['HLT_ZeroBias_v2','total','DST_','AlCa_','MC_','HLT_Mu','HLT_Ele','HLT_Photon','DiPFJetAve','HLT_PFJet','NoBPTX','HLT_BTagMu','HLT_HcalNZS_v2']:
+        for exclName in ['HLT_ZeroBias_v2','total']:
+            if exclName in name:
+                exclude = True
+        if not exclude:
+            triggerNumList.append(j)
+        triggerNameLengths = [len(triggerName) for triggerName in triggerNameList]
+        maxLength = max(triggerNameLengths)
+    for triggerName, j in triggerDict.iteritems():
+        paddedTriggerName = triggerName
+        while len(paddedTriggerName)<maxLength:
+            paddedTriggerName+=' '
+        triggerNamePadDict[triggerName] = paddedTriggerName
+                                                                                        
+
+
+    
     #loop over the files and measure the trigger rates
     for i, name in enumerate(names):
         qcdfile = rt.TFile(name+".root")
         print("File: "+name+".root")
         directory = qcdfile.GetDirectory("triggerRatesAnalysis", True)
         qcdTree = directory.Get('TriggerInfo')
+
         if not qcdTree:
             print("Error: didn't find the trigger info tree!")
             exit()
-        
-        # get the trigger names form the vector of strings
-        for name, j in triggerDict.iteritems():
-            triggerNameList[int(j)] = name
-        triggerNameList[-1] = 'total'
-        triggerNameLengths = [len(triggerName) for triggerName in triggerNameList]
-        maxLength = max(triggerNameLengths)
-    
-        for j, triggerName in enumerate(triggerNameList):
-            while len(triggerName)<maxLength:
-                triggerName+=' '
-            triggerNamePadList[j] = triggerName
-
-            
-        for triggerNum in range(numTriggers):
-            if triggerNameList[triggerNum]=='total':
-                triggerOrBool = "||".join(["triggerPassed[%i]"%mytrigger for mytrigger in range(numTriggers-1) if 'ZeroBias' not in triggerNameList[mytrigger]])
-                numPassedFile = qcdTree.Draw("", triggerOrBool)
+                    
+        for triggerName, triggerNum in triggerDict.iteritems():
+            if triggerName == 'total':
+                numPassedFile = 0                
+                qcdTree.Draw('>>elist','','entrylist')
+                elist = rt.gDirectory.Get('elist')
+                entry = -1
+                while True:
+                    entry = elist.Next()
+                    if entry == -1: break
+                    qcdTree.GetEntry(entry)
+                    for mytrigger in triggerNumList:
+                        if qcdTree.triggerPassed[mytrigger]:
+                            numPassedFile+=1
+                            break
+                #numPassedFile = qcdTree.Draw("", "||".join(["triggerPassed[%i]"%mytrigger for mytrigger in triggerNumList]))
             else:
                 numPassedFile = qcdTree.Draw("", "triggerPassed[%i]"%triggerNum)
             totalEvents = qcdTree.GetEntries()
-            #rate_data = (counts * lumiScaleFactor * prescaleNormalization)/(nlumiSec * lumiSectionLength)        
-            print("%s: %i passed out of %i" %(triggerNamePadList[triggerNum],numPassedFile,totalEvents))            
-            numPassed[triggerNum]+=numPassedFile
+            print("%s: %i passed out of %i" %(triggerNamePadDict[triggerName],numPassedFile,totalEvents))            
+            numPassedDict[triggerName]+=numPassedFile
             
-    print("Total Rates")
+    print("\nTotal Rates")
     
-    for triggerNum in range(numTriggers):
-        triggerRates[triggerNum] = lumiScaleFactor*prescaleNormalization*numPassed[triggerNum]*1.0/(nLumiSec * lumiSectionLength)
+    for triggerName, triggerNum in triggerDict.iteritems():
+        triggerRatesDict[triggerName] = lumiScaleFactor*prescaleNormalization*numPassedDict[triggerName]*1.0/(nLumiSec * lumiSectionLength)
         rateError = 0.0
-        if numPassed[triggerNum] > 0: 
-            rateError = triggerRates[triggerNum] / math.sqrt(numPassed[triggerNum])
+        if numPassedDict[triggerName] > 0: 
+            rateError = triggerRatesDict[triggerName] / math.sqrt(numPassedDict[triggerName])
         else:
-            rateErrror = triggerRates[triggerNum]
-        errors[triggerNum] = math.sqrt(errors[triggerNum]*errors[triggerNum] + rateError*rateError)
-    for triggerNum, (rate, error) in enumerate(zip(triggerRates,errors)):
-        print("%s: %f +/- %f"%(triggerNamePadList[triggerNum],rate,error))
+            rateError = triggerRatesDict[triggerName]
+        errorsDict[triggerName] = math.sqrt(errorsDict[triggerName]*errorsDict[triggerName] + rateError*rateError)
+
+        # print final output
+        print("%s: %f +/- %f"%(triggerNamePadDict[triggerName],triggerRatesDict[triggerName],errorsDict[triggerName]))
         
     
 def calcRateMC(options):
